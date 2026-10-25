@@ -1,0 +1,10 @@
+## Interface: 120100
+## Title: Pretty BB Echo
+## Notes: Countdown bars for Blood DK Boiling Point's 15s proc and 3s automatic Blood Boil echo, with resizable bars, colors and buff names.
+## Author: Bru Ken
+## Version: 1.0.0
+## SavedVariables: PrettyBBEchoDB
+## OptionalDeps: LibSharedMedia-3.0, Details, Wildu_SharedMedia
+## IconTexture: Interface\Icons\Spell_Deathknight_BloodBoil
+embeds.xml
+PrettyBBEcho.lua
