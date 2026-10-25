@@ -1,4 +1,4 @@
-# Pretty BB Echo
+# BB Echo Chain Tracker
 
 Countdown bars for Blood Death Knights using **Boiling Point**: one bar for the 15-second proc window and one for the 3-second automatic Blood Boil echo.
 
@@ -6,8 +6,8 @@ Countdown bars for Blood Death Knights using **Boiling Point**: one bar for the 
 
 - Bars drain as they count down, with the time left and the buff name on each bar.
 - Resize by dragging the corner grip while unlocked, or with the width and height sliders.
-- A real Edit Mode frame: click it to select, drag to move, and change size, texture, icon and more in its Edit Mode dialog (or use `/pbe unlock`).
-- `/pbe icon` shows or hides the spell icon.
+- A real Edit Mode frame: click it to select, drag to move, and change size, texture, icon and more in its Edit Mode dialog (or use `/bbe unlock`).
+- `/bbe icon` shows or hides the spell icon.
 - Pick colors (with opacity) for every bar state, the background, the border and the text.
 - Bar textures: Blizzard's own plus every LibSharedMedia texture, including Details' and media packs'.
 - Rotation chain can show the empowered Blood Boil step, or only the echo chain.
@@ -15,7 +15,7 @@ Countdown bars for Blood Death Knights using **Boiling Point**: one bar for the 
 - Horizontal or vertical bars.
 - Show or hide the spell icon, buff name, countdown time and spark.
 - Display modes: 15s only, 3s only, both, or rotation chain.
-- `/pbe` opens settings.
+- `/bbe` opens settings.
 
 ## Rotation chain
 
@@ -29,12 +29,12 @@ One bar follows the whole Boiling Point rotation:
 
 ## Commands
 
-- `/pbe chain`: switch to the rotation chain bar
-- `/pbe testchain`: play a sample chain
-- `/pbe`: open settings
-- `/pbe test3`, `/pbe test15`: test a bar
-- `/pbe unlock`, `/pbe lock`: move and resize the bars, or lock them
-- `/pbe hide`: hide active bars
+- `/bbe chain`: switch to the rotation chain bar
+- `/bbe testchain`: play a sample chain
+- `/bbe`: open settings
+- `/bbe test3`, `/bbe test15`: test a bar
+- `/bbe unlock`, `/bbe lock`: move and resize the bars, or lock them
+- `/bbe hide`: hide active bars
 
 ## Credits
 
