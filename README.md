@@ -25,7 +25,7 @@ One bar follows the whole Boiling Point rotation:
 2. Cast it and the bar becomes **Echo x1**, draining over 3s.
 3. Cast Dancing Rune Weapon: a thin strip under the bar counts down its window.
 4. Spam Heart Strike. When a new Boiling Point procs during an echo, the bar turns green (**linked**): the echo will use the proc itself and start the next echo, and the count goes up.
-5. While the bar is red (**need proc**), the chain ends when the echo runs out unless you get a proc first. The bar then shows **Chain ended xN** for a moment.
+5. While the bar is red (**need proc**), the chain ends when the echo runs out unless you get a proc first. The bar then shows **Chain ended xN** for 2 seconds by default. Set this from 0 (the bar hides at once) to 10 seconds, or show it as separate text you can move on its own in Edit Mode.
 
 ## Commands
 
