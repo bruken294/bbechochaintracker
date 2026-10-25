@@ -1,0 +1,6 @@
+package-as: BBEchoChainTracker
+
+enable-nolib-creation: no
+
+ignore:
+  - dist

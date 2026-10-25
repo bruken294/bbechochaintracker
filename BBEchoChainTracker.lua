@@ -116,7 +116,7 @@ end
 -- ============================================================
 -- Frames
 -- ============================================================
-local anchor = CreateFrame("Frame", "PrettyBBEchoAnchor", UIParent)
+local anchor = CreateFrame("Frame", "BBEchoChainTrackerAnchor", UIParent)
 anchor:SetSize(defaults.width, defaults.height)
 anchor:SetClampedToScreen(true)
 anchor:SetDontSavePosition(true)
@@ -131,7 +131,7 @@ unlockBg:Hide()
 
 local moveText = anchor:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 moveText:SetPoint("BOTTOM", anchor, "TOP", 0, 8)
-moveText:SetText("Pretty BB Echo\nDrag to move, drag the corner to resize")
+moveText:SetText("BB Echo Chain Tracker\nDrag to move, drag the corner to resize")
 moveText:Hide()
 
 local grip = CreateFrame("Button", nil, anchor)
@@ -181,12 +181,12 @@ local function CreateBar(name)
     return f
 end
 
-local procBar = CreateBar("PrettyBBEchoProcBar")
-local echoBar = CreateBar("PrettyBBEchoEchoBar")
-local chainBar = CreateBar("PrettyBBEchoChainBar")
+local procBar = CreateBar("BBEchoChainTrackerProcBar")
+local echoBar = CreateBar("BBEchoChainTrackerEchoBar")
+local chainBar = CreateBar("BBEchoChainTrackerChainBar")
 
 -- Thin strip under the chain bar for the Dancing Rune Weapon window.
-local drwFrame = CreateFrame("Frame", "PrettyBBEchoDRWStrip", anchor, "BackdropTemplate")
+local drwFrame = CreateFrame("Frame", "BBEchoChainTrackerDRWStrip", anchor, "BackdropTemplate")
 drwFrame:SetBackdrop({ bgFile = WHITE, edgeFile = WHITE, edgeSize = 1 })
 drwFrame:SetBackdropBorderColor(0, 0, 0, 1)
 drwFrame:Hide()
@@ -205,13 +205,13 @@ local function CopyColor(c)
 end
 
 local function CopyDefaults()
-    PrettyBBEchoDB = PrettyBBEchoDB or {}
+    BBEchoChainTrackerDB = BBEchoChainTrackerDB or {}
     for k, v in pairs(defaults) do
-        if PrettyBBEchoDB[k] == nil then
-            PrettyBBEchoDB[k] = type(v) == "table" and CopyColor(v) or v
+        if BBEchoChainTrackerDB[k] == nil then
+            BBEchoChainTrackerDB[k] = type(v) == "table" and CopyColor(v) or v
         end
     end
-    DB = PrettyBBEchoDB
+    DB = BBEchoChainTrackerDB
 end
 
 local function SavePosition()
@@ -766,8 +766,8 @@ end)
 -- ============================================================
 -- Settings panel
 -- ============================================================
-local category = CreateFrame("Frame", "PrettyBBEchoOptionsPanel")
-category.name = "Pretty BB Echo"
+local category = CreateFrame("Frame", "BBEchoChainTrackerOptionsPanel")
+category.name = "BB Echo Chain Tracker"
 
 -- The settings scroll, since they no longer fit the Settings window.
 local scroll = CreateFrame("ScrollFrame", nil, category, "ScrollFrameTemplate")
@@ -783,14 +783,14 @@ end)
 
 local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 title:SetPoint("TOPLEFT", 20, -20)
-title:SetText("Pretty BB Echo")
+title:SetText("BB Echo Chain Tracker")
 
 local subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
 subtitle:SetText("Countdown bars for Boiling Point's 15s proc and the 3s automatic Blood Boil echo")
 
 local function CreateSlider(key, label, minValue, maxValue, anchorTo, x, y, onChange)
-    local name = "PrettyBBEcho" .. key .. "Slider"
+    local name = "BBEchoChainTracker" .. key .. "Slider"
 
     local text = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     text:SetPoint("TOPLEFT", anchorTo, "BOTTOMLEFT", x, y)
@@ -975,7 +975,7 @@ local modeLabel = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
 modeLabel:SetPoint("TOPLEFT", echoNameBox, "BOTTOMLEFT", -6, -16)
 modeLabel:SetText("Display")
 
-local modeDropdown = CreateFrame("Frame", "PrettyBBEchoModeDropdown", panel, "UIDropDownMenuTemplate")
+local modeDropdown = CreateFrame("Frame", "BBEchoChainTrackerModeDropdown", panel, "UIDropDownMenuTemplate")
 modeDropdown:SetPoint("TOPLEFT", modeLabel, "BOTTOMLEFT", -16, -4)
 UIDropDownMenu_SetWidth(modeDropdown, 180)
 local modeNames = {
@@ -1009,37 +1009,37 @@ local function CreateCheck(name, label, anchorTo, x, y, onClick)
     return check
 end
 
-local chainProcCheck = CreateCheck("PrettyBBEchoChainProcCheck", "Chain: also show empowered Blood Boil",
+local chainProcCheck = CreateCheck("BBEchoChainTrackerChainProcCheck", "Chain: also show empowered Blood Boil",
     modeDropdown, 16, -4, function(v)
         DB.chainShowProc = v
         UpdateTimers()
     end)
 
-local iconCheck = CreateCheck("PrettyBBEchoIconCheck", "Show spell icon", drwSlider, -8, -24, function(v)
+local iconCheck = CreateCheck("BBEchoChainTrackerIconCheck", "Show spell icon", drwSlider, -8, -24, function(v)
     DB.showIcon = v
     Relayout()
 end)
-local sparkCheck = CreateCheck("PrettyBBEchoSparkCheck", "Show spark", iconCheck, 0, -2, function(v)
+local sparkCheck = CreateCheck("BBEchoChainTrackerSparkCheck", "Show spark", iconCheck, 0, -2, function(v)
     DB.showSpark = v
     UpdateTimers()
 end)
-local drwCheck = CreateCheck("PrettyBBEchoDRWCheck", "Show Dancing Rune Weapon strip (chain)", sparkCheck, 0, -2, function(v)
+local drwCheck = CreateCheck("BBEchoChainTrackerDRWCheck", "Show Dancing Rune Weapon strip (chain)", sparkCheck, 0, -2, function(v)
     DB.showDRW = v
     Relayout()
 end)
-local nameCheck = CreateCheck("PrettyBBEchoNameCheck", "Show buff name", drwCheck, 0, -2, function(v)
+local nameCheck = CreateCheck("BBEchoChainTrackerNameCheck", "Show buff name", drwCheck, 0, -2, function(v)
     DB.showName = v
     Relayout()
 end)
-local timeCheck = CreateCheck("PrettyBBEchoTimeCheck", "Show countdown time", nameCheck, 0, -2, function(v)
+local timeCheck = CreateCheck("BBEchoChainTrackerTimeCheck", "Show countdown time", nameCheck, 0, -2, function(v)
     DB.showTime = v
     Relayout()
 end)
-local verticalCheck = CreateCheck("PrettyBBEchoVerticalCheck", "Vertical bars", timeCheck, 0, -2, function(v)
+local verticalCheck = CreateCheck("BBEchoChainTrackerVerticalCheck", "Vertical bars", timeCheck, 0, -2, function(v)
     DB.orientation = v and "vertical" or "horizontal"
     Relayout()
 end)
-local lockCheck = CreateCheck("PrettyBBEchoLockCheck", "Lock bar position and size", verticalCheck, 0, -2, function(v)
+local lockCheck = CreateCheck("BBEchoChainTrackerLockCheck", "Lock bar position and size", verticalCheck, 0, -2, function(v)
     SetLocked(v)
 end)
 
@@ -1169,7 +1169,7 @@ end
 
 if LibEditMode then
     LibEditMode:AddFrame(anchor, OnEditModeMoved,
-        { point = defaults.point, x = defaults.x, y = defaults.y }, "Pretty BB Echo")
+        { point = defaults.point, x = defaults.x, y = defaults.y }, "BB Echo Chain Tracker")
 
     local modeValues = {}
     for _, mode in ipairs({ "proc15", "echo3", "both", "chain" }) do
@@ -1242,8 +1242,8 @@ if LibEditMode then
     end)
 end
 
-SLASH_PRETTYBBECHO1 = "/pbe"
-SlashCmdList.PRETTYBBECHO = function(msg)
+SLASH_BBECHOCHAINTRACKER1 = "/bbe"
+SlashCmdList.BBECHOCHAINTRACKER = function(msg)
     msg = (msg or ""):lower():match("^%s*(.-)%s*$")
     if msg == "" or msg == "options" or msg == "config" then
         OpenSettings()
@@ -1259,7 +1259,7 @@ SlashCmdList.PRETTYBBECHO = function(msg)
     elseif msg == "icon" then
         DB.showIcon = not DB.showIcon
         Relayout()
-        print("Pretty BB Echo: spell icon " .. (DB.showIcon and "shown" or "hidden"))
+        print("BB Echo Chain Tracker: spell icon " .. (DB.showIcon and "shown" or "hidden"))
     elseif msg == "unlock" then
         SetLocked(false)
     elseif msg == "lock" then
@@ -1269,6 +1269,6 @@ SlashCmdList.PRETTYBBECHO = function(msg)
         StopProcTimer()
         StopEchoTimer()
     else
-        print("Pretty BB Echo: /pbe (options) | chain | testchain | test3 | test15 | icon | unlock | lock | hide")
+        print("BB Echo Chain Tracker: /bbe (options) | chain | testchain | test3 | test15 | icon | unlock | lock | hide")
     end
 end

@@ -1,0 +1,26 @@
+name: Package and release
+
+# Push a tag such as v1.0.1 to build the zip and publish it as a GitHub
+# release. CurseForge, Wago and WoWInterface uploads happen too once their
+# project IDs are in the .toc and their API tokens are repository secrets.
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      CF_API_KEY: ${{ secrets.CF_API_KEY }}
+      WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+      WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
+      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: BigWigsMods/packager@v2
