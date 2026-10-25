@@ -7,8 +7,6 @@ local ECHO_DURATION = 3.0
 -- The echo's own Blood Boil can arrive just after the countdown has already
 -- chained; within this window it resyncs the echo instead of counting a link.
 local RESYNC_WINDOW = 0.5
--- How long "Chain ended" stays on the chain bar.
-local CHAIN_END_HOLD = 2.0
 
 local WHITE = "Interface\\Buttons\\WHITE8X8"
 local BAR_TEXTURE = "Interface\\TargetingFrame\\UI-StatusBar"
@@ -70,6 +68,12 @@ local defaults = {
     mode = "both", -- proc15 | echo3 | both | chain
     locked = true,
     chainShowProc = true, -- chain bar also shows the empowered Blood Boil waiting
+    chainEndHold = 2, -- seconds "Chain ended" stays up; 0 hides the bar at once
+    chainEndSeparate = false, -- "Chain ended" as its own movable text, not on the bar
+    endFontSize = 18,
+    endPoint = "CENTER",
+    endX = 0,
+    endY = -90,
     orientation = "horizontal", -- horizontal | vertical
     showName = true,
     showTime = true,
@@ -197,6 +201,17 @@ drwBar:SetMinMaxValues(0, 1)
 drwBar:SetPoint("TOPLEFT", 1, -1)
 drwBar:SetPoint("BOTTOMRIGHT", -1, 1)
 
+-- "Chain ended" can show as its own text, placed apart from the bars, so the
+-- chain bar hides the moment the chain ends.
+local endFrame = CreateFrame("Frame", "BBEchoChainTrackerEndText", UIParent)
+endFrame:SetClampedToScreen(true)
+endFrame:SetDontSavePosition(true)
+endFrame:Hide()
+
+local endText = endFrame:CreateFontString(nil, "OVERLAY")
+endText:SetFont(STANDARD_TEXT_FONT, 18, "OUTLINE")
+endText:SetPoint("CENTER")
+
 -- ============================================================
 -- Settings helpers
 -- ============================================================
@@ -273,6 +288,18 @@ local function ApplyStyle()
 
     ApplyFrameStyle(drwFrame, drwBar, texture)
     SetColor(drwBar, DB.drwColor)
+
+    local risk = DB.riskColor
+    endText:SetTextColor(risk.r, risk.g, risk.b, 1)
+end
+
+-- Sized for the longest usual text, so the frame does not jump as it changes.
+local function ApplyEndText()
+    local size = DB.endFontSize
+    endText:SetFont(STANDARD_TEXT_FONT, size, "OUTLINE")
+    endFrame:SetSize(size * 9, size + 8)
+    endFrame:ClearAllPoints()
+    endFrame:SetPoint(DB.endPoint, UIParent, DB.endPoint, DB.endX, DB.endY)
 end
 
 local function IsVertical()
@@ -432,10 +459,12 @@ local function UpdateVisibility()
     procBar:SetShown(wantProc and (procGlow or unlocked))
     echoBar:SetShown(wantEcho and (echoRunning or unlocked))
 
-    local chainShown = chain and (echoRunning or chainEndedAt > 0 or unlocked
+    local endOnBar = chainEndedAt > 0 and not DB.chainEndSeparate
+    local chainShown = chain and (echoRunning or endOnBar or unlocked
         or (procGlow and DB.chainShowProc))
     chainBar:SetShown(chainShown)
     drwFrame:SetShown(chainShown and DB.showDRW and (drwExpiresAt > 0 or unlocked))
+    endFrame:SetShown(chain and DB.chainEndSeparate and (chainEndedAt > 0 or unlocked))
 
     -- Edit Mode draws its own highlight and moves the bars itself.
     local manual = not DB.locked
@@ -474,11 +503,13 @@ local function AdvanceTimers(now)
         else
             echoRunning = false
             echoExpiresAt = 0
-            chainEndedAt = now
+            if DB.chainEndHold > 0 then
+                chainEndedAt = now
+            end
         end
     end
 
-    if chainEndedAt > 0 and now - chainEndedAt > CHAIN_END_HOLD then
+    if chainEndedAt > 0 and now - chainEndedAt > DB.chainEndHold then
         chainEndedAt = 0
     end
 
@@ -519,7 +550,7 @@ local function RenderChain(now, unlocked)
         SetColor(f.bar, DB.procColor)
         f.nameText:SetText(DB.procName .. " ready")
         SetBarValue(f, remain / PROC_DURATION, FormatRemain(remain))
-    elseif chainEndedAt > 0 then
+    elseif chainEndedAt > 0 and not DB.chainEndSeparate then
         SetColor(f.bar, DB.riskColor)
         f.nameText:SetFormattedText("Chain ended x%d", chainCount)
         SetBarValue(f, 0, "")
@@ -527,6 +558,12 @@ local function RenderChain(now, unlocked)
         SetColor(f.bar, DB.linkedColor)
         f.nameText:SetText("Echo x3 - linked")
         SetBarValue(f, 0.65, FormatRemain(ECHO_DURATION * 0.65))
+    end
+
+    if chainEndedAt > 0 then
+        endText:SetFormattedText("Chain ended x%d", chainCount)
+    elseif unlocked then
+        endText:SetText("Chain ended x5")
     end
 
     if drwExpiresAt > 0 then
@@ -644,6 +681,16 @@ local function ApplyUnlock()
         anchor:RegisterForDrag()
         SavePosition()
     end
+
+    if not editModeActive then
+        endFrame:SetMovable(manual)
+    end
+    endFrame:EnableMouse(manual)
+    if manual then
+        endFrame:RegisterForDrag("LeftButton")
+    else
+        endFrame:RegisterForDrag()
+    end
     if IsUnlocked() then
         EnsureUpdates()
     end
@@ -664,6 +711,27 @@ end)
 anchor:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
     SavePosition()
+end)
+
+local function SaveEndPosition(point, x, y)
+    DB.endPoint, DB.endX, DB.endY = point, x, y
+end
+
+endFrame:SetScript("OnDragStart", function(self)
+    if IsUnlocked() then self:StartMoving() end
+end)
+endFrame:SetScript("OnDragStop", function(self)
+    self:StopMovingOrSizing()
+    -- Kept relative to the same point of the screen, like Edit Mode does.
+    local point, _, relativePoint, x, y = self:GetPoint(1)
+    if point == relativePoint then
+        SaveEndPosition(point, x, y)
+    else
+        local cx, cy = self:GetCenter()
+        local ux, uy = UIParent:GetCenter()
+        SaveEndPosition("CENTER", cx - ux, cy - uy)
+    end
+    ApplyEndText()
 end)
 
 local OnResized -- set by the settings panel so its sliders follow the grip
@@ -717,6 +785,7 @@ eventFrame:SetScript("OnEvent", function(_, event, ...)
         CopyDefaults()
         ApplyPosition()
         ApplyStyle()
+        ApplyEndText()
 
         -- The saved texture may come from a media pack that registers later.
         local lsm = GetLSM()
@@ -834,6 +903,10 @@ local heightSlider = CreateSlider("height", "Bar thickness", MIN_HEIGHT, MAX_HEI
 local fontSlider = CreateSlider("fontSize", "Text size", 8, 24, heightSlider, -4, -24, Relayout)
 local spacingSlider = CreateSlider("spacing", "Bar spacing", 0, 20, fontSlider, -4, -24, Relayout)
 local drwSlider = CreateSlider("drwDuration", "Dancing Rune Weapon seconds", 4, 20, spacingSlider, -4, -24, function() end)
+local chainEndSlider = CreateSlider("chainEndHold", "\"Chain ended\" seconds (0 = hide at once)", 0, 10, drwSlider, -4, -24,
+    function() UpdateTimers() end)
+local endFontSlider = CreateSlider("endFontSize", "\"Chain ended\" text size", 10, 40, chainEndSlider, -4, -24,
+    function() ApplyEndText() end)
 
 OnResized = function()
     if category:IsVisible() then
@@ -1014,8 +1087,13 @@ local chainProcCheck = CreateCheck("BBEchoChainTrackerChainProcCheck", "Chain: a
         DB.chainShowProc = v
         UpdateTimers()
     end)
+local endSeparateCheck = CreateCheck("BBEchoChainTrackerEndSeparateCheck", "Chain: \"Chain ended\" as separate text",
+    chainProcCheck, 0, -2, function(v)
+        DB.chainEndSeparate = v
+        UpdateTimers()
+    end)
 
-local iconCheck = CreateCheck("BBEchoChainTrackerIconCheck", "Show spell icon", drwSlider, -8, -24, function(v)
+local iconCheck = CreateCheck("BBEchoChainTrackerIconCheck", "Show spell icon", endFontSlider, -8, -24, function(v)
     DB.showIcon = v
     Relayout()
 end)
@@ -1081,6 +1159,9 @@ local function RefreshPanel()
     fontSlider.Refresh()
     spacingSlider.Refresh()
     drwSlider.Refresh()
+    chainEndSlider.Refresh()
+    endFontSlider.Refresh()
+    endSeparateCheck:SetChecked(DB.chainEndSeparate)
     for _, swatch in ipairs(swatches) do swatch.Refresh() end
     textureDropdown:GenerateMenu()
     RefreshTexturePreview()
@@ -1098,10 +1179,12 @@ local function RefreshPanel()
 end
 
 resetButton:SetScript("OnClick", function()
-    for _, key in ipairs({ "point", "relativePoint", "x", "y", "width", "height", "spacing", "fontSize" }) do
+    for _, key in ipairs({ "point", "relativePoint", "x", "y", "width", "height", "spacing", "fontSize",
+        "endPoint", "endX", "endY", "endFontSize" }) do
         DB[key] = defaults[key]
     end
     ApplyPosition()
+    ApplyEndText()
     Relayout()
     RefreshPanel()
 end)
@@ -1230,6 +1313,31 @@ if LibEditMode then
         EditModeCheckbox("Show spark", "showSpark", UpdateTimers),
         EditModeCheckbox("Show Dancing Rune Weapon strip", "showDRW", Relayout),
         EditModeCheckbox("Chain: show empowered Blood Boil", "chainShowProc", UpdateTimers),
+        EditModeSlider("Chain ended seconds (0 = off)", "chainEndHold", 0, 10),
+        EditModeCheckbox("Chain ended as separate text", "chainEndSeparate", UpdateTimers),
+    })
+
+    LibEditMode:AddFrame(endFrame, function(_, _, point, x, y)
+        if not DB then return end
+        SaveEndPosition(point, x, y)
+    end, { point = defaults.endPoint, x = defaults.endX, y = defaults.endY },
+        "BB Echo Chain Tracker: Chain ended")
+
+    LibEditMode:AddFrameSettings(endFrame, {
+        {
+            kind = LibEditMode.SettingType.Slider,
+            name = "Text size",
+            default = defaults.endFontSize,
+            minValue = 10,
+            maxValue = 40,
+            valueStep = 1,
+            get = function() return DB.endFontSize end,
+            set = function(_, value)
+                DB.endFontSize = math.floor(value + 0.5)
+                ApplyEndText()
+            end,
+        },
+        EditModeSlider("Seconds shown", "chainEndHold", 1, 10),
     })
 
     LibEditMode:RegisterCallback("enter", function()
