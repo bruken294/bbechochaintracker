@@ -47,6 +47,14 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 
-The libraries in Libs/ are bundled unmodified and keep their own licenses:
-LibEditMode (Libs/LibEditMode/LICENSE.txt), LibSharedMedia-3.0,
-CallbackHandler-1.0 and LibStub.
+The libraries in Libs/ are bundled unmodified and keep their own licenses.
+The MIT License above does not apply to them.
+
+  LibEditMode          by p3lim, see Libs/LibEditMode/LICENSE.txt
+  LibSharedMedia-3.0   by Elkano, GNU LGPL v2.1, see Libs/LibSharedMedia-3.0/LICENSE.txt
+  CallbackHandler-1.0  by the Ace3 Development Team, see Libs/CallbackHandler-1.0/LICENSE.txt
+  LibStub              public domain, as stated in Libs/LibStub/LibStub.lua
+
+World of Warcraft is a trademark of Blizzard Entertainment. This addon is not
+made or endorsed by Blizzard. The game textures and spell icons it shows are
+referenced by path from the game client and are not distributed with it.
