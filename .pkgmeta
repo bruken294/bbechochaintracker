@@ -1,0 +1,6 @@
+package-as: PrettyBBEcho
+
+enable-nolib-creation: no
+
+ignore:
+  - dist
